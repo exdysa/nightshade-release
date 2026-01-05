@@ -1,17 +1,16 @@
+import argparse
+import glob
 import os
+import pickle
+import random
 import sys
 
-sys.path.append("/home/shansixioing/dos/")
+import clip
+import numpy as np
 import torch
 from PIL import Image
-import glob
-import pickle
-import argparse
-from torchvision import transforms
-import numpy as np
-import random
 from sklearn.metrics.pairwise import cosine_similarity
-import clip
+from torchvision import transforms
 
 
 def crop_to_square(img):
@@ -27,10 +26,13 @@ def crop_to_square(img):
 
 class CLIP(object):
     def __init__(self):
-        self.device = "cuda"
+        if torch.cuda.is_available():
+            self.device = "cuda"
+        else:
+            self.device = "mps"
         model, preprocess = clip.load("ViT-B/32", device=self.device)
         tokenizer = clip.tokenize
-        model = model.cuda()
+        model = model.to(self.device)
         self.model = model
         self.preprocess = preprocess
         self.tokenizer = tokenizer
@@ -44,7 +46,7 @@ class CLIP(object):
         return text_features
 
     def img_emb(self, img):
-        image = self.preprocess(img).unsqueeze(0).to("cuda")
+        image = self.preprocess(img).unsqueeze(0).to(self.device)
         with torch.no_grad():
             image_features = self.model.encode_image(image)
         return image_features
@@ -54,10 +56,10 @@ class CLIP(object):
             text = [text]
 
         if isinstance(image, list):
-            image = [self.preprocess(i).unsqueeze(0).to("cuda") for i in image]
+            image = [self.preprocess(i).unsqueeze(0).to(self.device) for i in image]
             image = torch.concat(image)
         else:
-            image = self.preprocess(image).unsqueeze(0).to("cuda")
+            image = self.preprocess(image).unsqueeze(0).to(self.device)
 
         text = self.tokenizer(text).to(self.device)
 
@@ -102,7 +104,7 @@ def main():
 
     all_prompts = [d[1] for d in res_ls]
     text_emb = clip_model.text_emb(all_prompts)
-    text_emb_target = clip_model.text_emb("a photo of a {}".format(source_concept))
+    text_emb_target = clip_model.text_emb(f"a photo of a {source_concept}")
     text_emb_np = text_emb.cpu().float().numpy()
     text_emb_target_np = text_emb_target.cpu().float().numpy()
     res = cosine_similarity(text_emb_np, text_emb_target_np).reshape(-1)
@@ -115,22 +117,18 @@ def main():
             "img": np.array(img),
             "text": text,
         }
-        pickle.dump(cur_data, open(os.path.join(args.outdir, "{}.p".format(i)), "wb"))
+        pickle.dump(cur_data, open(os.path.join(args.outdir, f"{i}.p")))
 
 
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--directory', type=str,
-                        help="", default='')
-    parser.add_argument('-od', '--outdir', type=str,
-                        help="", default='')
-    parser.add_argument('-n', '--num', type=int,
-                        help="", default=100)
-    parser.add_argument('-c', '--concept', type=str, required=True,
-                        help="")
+    parser.add_argument("-d", "--directory", type=str, help="", default="")
+    parser.add_argument("-od", "--outdir", type=str, help="", default="")
+    parser.add_argument("-n", "--num", type=int, help="", default=100)
+    parser.add_argument("-c", "--concept", type=str, required=True, help="")
     return parser.parse_args(argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = parse_arguments(sys.argv[1:])
     main()

@@ -21,10 +21,19 @@ def crop_to_square(img):
 
 
 def main():
-    poison_generator = PoisonGeneration(target_concept=args.target_name, device="cuda", eps=args.eps)
+    import torch
+
+    if torch.cuda.is_available:
+        device = "cuda"
+    elif torch.mps.is_available():
+        device = "mps"
+    else:
+        device = "cpu"
+
+    poison_generator = PoisonGeneration(target_concept=args.target_name, device=device, eps=args.eps)
     all_data_paths = glob.glob(os.path.join(args.directory, "*.p"))
-    all_imgs = [pickle.load(open(f, "rb"))['img'] for f in all_data_paths]
-    all_texts = [pickle.load(open(f, "rb"))['text'] for f in all_data_paths]
+    all_imgs = [pickle.load(open(f, "rb"))["img"] for f in all_data_paths]
+    all_texts = [pickle.load(open(f, "rb"))["text"] for f in all_data_paths]
     all_imgs = [Image.fromarray(img) for img in all_imgs]
 
     all_result_imgs = poison_generator.generate_all(all_imgs, args.target_name)
@@ -37,16 +46,14 @@ def main():
 
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--directory', type=str,
-                        help="", default='')
-    parser.add_argument('-od', '--outdir', type=str,
-                        help="", default='')
-    parser.add_argument('-e', '--eps', type=float, default=0.04)
-    parser.add_argument('-t', '--target_name', type=str, default="cat")
+    parser.add_argument("-d", "--directory", type=str, help="", default="")
+    parser.add_argument("-od", "--outdir", type=str, help="", default="")
+    parser.add_argument("-e", "--eps", type=float, default=0.04)
+    parser.add_argument("-t", "--target_name", type=str, default="cat")
     return parser.parse_args(argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import time
 
     args = parse_arguments(sys.argv[1:])

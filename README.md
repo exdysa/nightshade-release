@@ -1,8 +1,17 @@
 # NIGHTSHADE
 
+Consolidation of
+
+[Jiggly-Balls/nightshade](https://github.com/Jiggly-Balls/nightshade)
+[Shawn-Shan/nightshade-release](https://github.com/Shawn-Shan/nightshade-release)
+[LunarSphere/nightshade-release](https://github.com/LunarSphere/nightshade-release)
+
+## Legacy Readme
+
+```
 This repo contains the research code release for Nightshade.
 
-:warning: If you plan to use Nightshade to protect your own copyrighted content, please use our MacOS/Windows prototype on our [webpage](https://nightshade.cs.uchicago.edu/downloads.html). For details on the differences, please checkout the FAQ below. 
+:warning: If you plan to use Nightshade to protect your own copyrighted content, please use our MacOS/Windows prototype on our [webpage](https://nightshade.cs.uchicago.edu/downloads.html). For details on the differences, please checkout the FAQ below.
 
 ### OVERVIEW
 
@@ -38,13 +47,12 @@ The easiest way to train the model is to use latent diffusion [source code](http
 
 ### Citation
 
-```
 @inproceedings{shan2024nightshade,
   title={Nightshade: Prompt-Specific Poisoning Attacks on Text-to-Image Generative Models},
   author={Shan, Shawn and Ding, Wenxin and Passananti, Josephine and Wu, Stanley and Zheng, Haitao and Zhao, Ben Y.},
   booktitle={IEEE Symposium on Security and Privacy},
   year={2024},
 }
-```
 
-For any questions with the code, please email shawnshan@cs.uchicago.edu. 
+For any questions with the code, please email shawnshan@cs.uchicago.edu.
+```
